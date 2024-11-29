@@ -75,15 +75,14 @@ class ICBIRCBridge:
         self.irc_port = irc_port
         self.irc_channel = irc_channel
         self.nickname = nickname
-        self.icb_channel = icb_channel 
-
+        self.shutting_down = False
         self.icb_conn = None
         self.irc_socket = None
 
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     def connect_icb(self):
-        while True:
+        while not self.shutting_down:
             try:
                 self.icb_conn = IcbConn(nic=self.nickname, server=self.icb_server, port=self.icb_port)
                 self.icb_conn.connect()
@@ -97,10 +96,13 @@ class ICBIRCBridge:
                 break
             except Exception as e:
                 logging.error(f"Error connecting to ICB server: {e}. Retrying in 5 seconds...")
-                time.sleep(5)
+                if not self.shutting_down:
+                    time.sleep(5)
+                else:
+                    break
 
     def connect_irc(self):
-        while True:
+        while not self.shutting_down:
             try:
                 self.irc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.irc_socket.connect((self.irc_server, self.irc_port))
@@ -113,10 +115,13 @@ class ICBIRCBridge:
                 break
             except Exception as e:
                 logging.error(f"Error connecting to IRC server: {e}. Retrying in 5 seconds...")
-                time.sleep(5)
+                if not self.shutting_down:
+                    time.sleep(5)
+                else:
+                    break
 
     def ping_icb(self):
-        while True:
+        while not self.shutting_down:
             try:
                 self.icb_conn.send([IcbConn.M_PING])
                 logging.info("Sent PING to ICB server")
@@ -127,7 +132,7 @@ class ICBIRCBridge:
                 break
 
     def ping_irc(self):
-        while True:
+        while not self.shutting_down:
             try:
                 self.irc_socket.send("PING :ping\r\n".encode("utf-8"))
                 logging.info("Sent PING to IRC server")
@@ -138,7 +143,7 @@ class ICBIRCBridge:
                 break
 
     def receive_from_icb(self):
-        while True:
+        while not self.shutting_down:
             try:
                 packet = self.icb_conn.recv()
                 if packet:
@@ -157,7 +162,7 @@ class ICBIRCBridge:
                 break
 
     def receive_from_irc(self):
-        while True:
+        while not self.shutting_down:
             try:
                 data = self.irc_socket.recv(4096)
                 if data:
@@ -182,14 +187,23 @@ class ICBIRCBridge:
         self.connect_irc()
         self.connect_icb()
 
+    def shutdown(self):
+        self.shutting_down = True
+        # Close connections and clean up resources here
+
 if __name__ == "__main__":
     icb_server = "default.icb.net"
     icb_port = 7326
     irc_server = "irc.libera.chat"
     irc_port = 6667
-    irc_channel = "#ddial"
+    irc_channel = "#ddial2"
     nickname = "icbircgw"
     icb_channel = "zzzddial"
 
     bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname)
-    bridge.start()
+    
+    try:
+        bridge.start()
+    except KeyboardInterrupt:
+        logging.info("Shutting down...")
+        bridge.shutdown()
