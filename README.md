@@ -6,3 +6,5 @@ Default icb port is 7326
 #add vscode compatibility
 #test github copilot
 
+"ACDC rocks."
+
