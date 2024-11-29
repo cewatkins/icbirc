@@ -127,7 +127,7 @@ class ICBIRCBridge:
                         self.irc_socket.send(irc_message.encode("utf-8"))
                         logging.info(f"Sent to IRC: {irc_message.strip()}")
                         logging.info(f"Message sent across gateway: ICB -> IRC: <{user}> {message}")
-            except Exception as e:
+            except (socket.error, Exception) as e:
                 logging.error(f"Error receiving from ICB: {e}. Reconnecting...")
                 self.connect_icb()
                 break
@@ -148,7 +148,7 @@ class ICBIRCBridge:
                             logging.info(f"Received from IRC: {line.strip()}")
                             logging.info(f"Sent to ICB: {icb_message.strip()}")
                             logging.info(f"Message sent across gateway: IRC -> ICB: {content.strip()}")
-            except Exception as e:
+            except (socket.error, Exception) as e:
                 logging.error(f"Error receiving from IRC: {e}. Reconnecting...")
                 self.connect_irc()
                 break
