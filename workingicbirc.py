@@ -56,9 +56,9 @@ class IcbConn:
             msg += '\001' + i
         msg += '\000'
         msg = msg.encode('utf-8')
-        if len(msg) > 254:
+        if len(msg) > 666:
             print("*** mesg too long ***")
-            msg = msg[:254]
+            msg = msg[:666]
         self.socket.send(bytes([len(msg)]) + msg)
 
     def login(self, command='login'):
