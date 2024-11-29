@@ -93,7 +93,6 @@ class ICBIRCBridge:
                 self.icb_conn.send([IcbConn.M_COMMAND, 'g', f'z{self.icb_channel}'])
                 logging.info(f"Joined channel on ICB server: {self.icb_channel}")
                 threading.Thread(target=self.receive_from_icb).start()
-                threading.Thread(target=self.ping_icb).start()
                 break
             except Exception as e:
                 logging.error(f"Error connecting to ICB server: {e}. Retrying in 5 seconds...")
@@ -109,33 +108,10 @@ class ICBIRCBridge:
                 self.irc_socket.send(f"USER {self.nickname} 0 * :ICB to IRC Gateway\r\n".encode("utf-8"))
                 self.irc_socket.send(f"JOIN {self.irc_channel}\r\n".encode("utf-8"))
                 threading.Thread(target=self.receive_from_irc).start()
-                threading.Thread(target=self.ping_irc).start()
                 break
             except Exception as e:
                 logging.error(f"Error connecting to IRC server: {e}. Retrying in 5 seconds...")
                 time.sleep(5)
-
-    def ping_icb(self):
-        while True:
-            try:
-                self.icb_conn.send([IcbConn.M_PING])
-                logging.info("Sent PING to ICB server")
-                time.sleep(60)
-            except (socket.error, Exception) as e:
-                logging.error(f"Error sending PING to ICB: {e}. Reconnecting...")
-                self.connect_icb()
-                break
-
-    def ping_irc(self):
-        while True:
-            try:
-                self.irc_socket.send("PING :ping\r\n".encode("utf-8"))
-                logging.info("Sent PING to IRC server")
-                time.sleep(60)
-            except (socket.error, Exception) as e:
-                logging.error(f"Error sending PING to IRC: {e}. Reconnecting...")
-                self.connect_irc()
-                break
 
     def receive_from_icb(self):
         while True:
