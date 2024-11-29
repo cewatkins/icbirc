@@ -75,6 +75,7 @@ class ICBIRCBridge:
         self.irc_port = irc_port
         self.irc_channel = irc_channel
         self.nickname = nickname
+        self.icb_channel = icb_channel 
 
         self.icb_conn = None
         self.irc_socket = None
@@ -89,8 +90,8 @@ class ICBIRCBridge:
                 logging.info(f"Connected to ICB server at {self.icb_server}:{self.icb_port}")
                 self.icb_conn.login()
                 logging.info(f"Logged in to ICB server as {self.nickname}")
-                self.icb_conn.send([IcbConn.M_COMMAND, 'g', '#drmadicb'])
-                logging.info(f"Joined channel on ICB server: #drmadicb")
+                self.icb_conn.send([IcbConn.M_COMMAND, 'g', '#', self.icb_channel])
+                logging.info(f"Joined channel on ICB server: {self.icb_channel}")
                 threading.Thread(target=self.receive_from_icb).start()
                 break
             except Exception as e:
@@ -164,6 +165,7 @@ if __name__ == "__main__":
     irc_port = 6667
     irc_channel = "#ddial"
     nickname = "ICBBridgeBot"
+    icb_channel = "zzzddial"
 
     bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname)
     bridge.start()
