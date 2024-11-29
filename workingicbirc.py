@@ -188,7 +188,7 @@ if __name__ == "__main__":
     irc_server = "irc.libera.chat"
     irc_port = 6667
     irc_channel = "#ddial"
-    nickname = "ICBBridgeBot"
+    nickname = "icbircgw"
     icb_channel = "zzzddial"
 
     bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname)
