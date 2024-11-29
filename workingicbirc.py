@@ -90,7 +90,7 @@ class ICBIRCBridge:
                 logging.info(f"Connected to ICB server at {self.icb_server}:{self.icb_port}")
                 self.icb_conn.login()
                 logging.info(f"Logged in to ICB server as {self.nickname}")
-                self.icb_conn.send([IcbConn.M_COMMAND, 'g', '#', self.icb_channel])
+                self.icb_conn.send([IcbConn.M_COMMAND, 'g', f'z{self.icb_channel}'])
                 logging.info(f"Joined channel on ICB server: {self.icb_channel}")
                 threading.Thread(target=self.receive_from_icb).start()
                 break
