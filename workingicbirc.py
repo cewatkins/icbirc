@@ -139,7 +139,10 @@ class ICBIRCBridge:
                 if data:
                     lines = data.decode("utf-8", errors="replace").split("\r\n")
                     for line in lines:
-                        if "PRIVMSG" in line:
+                        if line.startswith("PING"):
+                            self.irc_socket.send(f"PONG {line.split()[1]}\r\n".encode("utf-8"))
+                            logging.info(f"Responded to IRC PING with PONG")
+                        elif "PRIVMSG" in line:
                             prefix, message = line.split("PRIVMSG", 1)
                             user = prefix.split("!")[0][1:]
                             content = message.split(":", 1)[1]
