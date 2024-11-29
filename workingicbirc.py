@@ -113,6 +113,11 @@ class ICBIRCBridge:
                 logging.error(f"Error connecting to IRC server: {e}. Retrying in 5 seconds...")
                 time.sleep(5)
 
+    def handle_irc_ping(self, line):
+        server = line.split()[1]
+        self.irc_socket.send(f"PONG {server}\r\n".encode("utf-8"))
+        logging.info(f"Responded to IRC PING with PONG {server}")
+
     def receive_from_icb(self):
         while True:
             try:
@@ -139,7 +144,9 @@ class ICBIRCBridge:
                 if data:
                     lines = data.decode("utf-8", errors="replace").split("\r\n")
                     for line in lines:
-                        if "PRIVMSG" in line:
+                        if line.startswith("PING"):
+                            self.handle_irc_ping(line)
+                        elif "PRIVMSG" in line:
                             prefix, message = line.split("PRIVMSG", 1)
                             user = prefix.split("!")[0][1:]
                             content = message.split(":", 1)[1]
