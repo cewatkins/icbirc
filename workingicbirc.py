@@ -68,13 +68,14 @@ class IcbConn:
         self.socket.close()
 
 class ICBIRCBridge:
-    def __init__(self, icb_server, icb_port, irc_server, irc_port, irc_channel, nickname):
+    def __init__(self, icb_server, icb_port, irc_server, irc_port, irc_channel, nickname, icb_channel):
         self.icb_server = icb_server
         self.icb_port = icb_port
         self.irc_server = irc_server
         self.irc_port = irc_port
         self.irc_channel = irc_channel
         self.nickname = nickname
+        self.icb_channel = icb_channel
         self.shutting_down = False
         self.icb_conn = None
         self.irc_socket = None
@@ -166,7 +167,12 @@ class ICBIRCBridge:
             try:
                 data = self.irc_socket.recv(4096)
                 if data:
-                    lines = data.decode("utf-8", errors="replace").split("\r\n")
+                    try:
+                        lines = data.decode("utf-8", errors="replace").split("\r\n")
+                    except UnicodeDecodeError as e:
+                        logging.error(f"Error decoding data from IRC: {e}")
+                        continue
+
                     for line in lines:
                         if "PRIVMSG" in line:
                             prefix, message = line.split("PRIVMSG", 1)
@@ -196,11 +202,11 @@ if __name__ == "__main__":
     icb_port = 7326
     irc_server = "irc.libera.chat"
     irc_port = 6667
-    irc_channel = "#ddial2"
+    irc_channel = "#ddial"
     nickname = "icbircgw"
     icb_channel = "zzzddial"
 
-    bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname)
+    bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname, icb_channel)
     
     try:
         bridge.start()
