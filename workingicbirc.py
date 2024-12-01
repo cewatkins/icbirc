@@ -4,6 +4,12 @@ import logging
 import time
 import os
 import pwd
+# import dolly
+
+def import_dolly():
+    global dolly
+    import importlib
+    dolly = importlib.import_module('dolly')
 
 class IcbConn:
     M_LOGIN = 'a'
@@ -21,6 +27,7 @@ class IcbConn:
     M_PONG = 'm'
 
     def __init__(self, nic=None, group=None, logid=None, server=None, port=None):
+        import_dolly("pornstar","brief joke")
         self.server = server if server else "default.icb.net"
         self.port = port if port else 7326
         self.nickname = nic if nic else pwd.getpwuid(os.getuid())[0]
@@ -166,7 +173,7 @@ if __name__ == "__main__":
     icb_port = 7326
     irc_server = "irc.libera.chat"
     irc_port = 6667
-    irc_channel = "#ddial"
+    irc_channel = "#ddial2"
     nickname = "ICBBridgeBot"
     icb_channel = "zzzddial"
 
