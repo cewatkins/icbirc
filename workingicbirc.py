@@ -4,12 +4,9 @@ import logging
 import time
 import os
 import pwd
-# import dolly
+from dolly import get_dolly_response
 
-def import_dolly():
-    global dolly
-    import importlib
-    dolly = importlib.import_module('dolly')
+
 
 class IcbConn:
     M_LOGIN = 'a'
@@ -27,7 +24,6 @@ class IcbConn:
     M_PONG = 'm'
 
     def __init__(self, nic=None, group=None, logid=None, server=None, port=None):
-        import_dolly("pornstar","brief joke")
         self.server = server if server else "default.icb.net"
         self.port = port if port else 7326
         self.nickname = nic if nic else pwd.getpwuid(os.getuid())[0]
@@ -154,10 +150,23 @@ class ICBIRCBridge:
                             user = prefix.split("!")[0][1:]
                             content = message.split(":", 1)[1]
                             icb_message = f"{user}: {content}"
+                            if "dolly" in icb_message:
+                                parts = icb_message.split(" ", 2)
+                                if len(parts) >= 3:
+                                    input1 = parts[1]
+                                    input2 = parts[2]
+                                    input_parts = icb_message.split(" ", 2)
+                                    input1 = input_parts[1]
+                                    input2 = input_parts[2]
+                                    response = get_dolly_response(input1, input2)
+                                    icb_message = f"{user}: {response}"
+                                    logging.info(f"Sent to IRC: {icb_message.strip()}")
                             self.icb_conn.send([IcbConn.M_OPENMSG, icb_message])
                             logging.info(f"Received from IRC: {line.strip()}")
                             logging.info(f"Sent to ICB: {icb_message.strip()}")
                             logging.info(f"Message sent across gateway: IRC -> ICB: {content.strip()}")
+                            
+                            
             except (socket.error, Exception) as e:
                 logging.error(f"Error receiving from IRC: {e}. Reconnecting...")
                 self.connect_irc()
@@ -179,3 +188,9 @@ if __name__ == "__main__":
 
     bridge = ICBIRCBridge(icb_server, icb_port, irc_server, irc_port, irc_channel, nickname)
     bridge.start()
+
+    system_content = input("Enter the system content: ")
+    user_content = input("Enter the user content: ")
+
+    response = get_dolly_response(system_content, user_content)
+    print("Message:\n", response)
